@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: org-data
+spec:
+  type: url
+  targets:
+    - http://github.com/keithralphs/DiscoveryTest/rawAPIDefinitions/sponge.yaml
+    - http://github.com/keithralphs/DiscoveryTest/rawAPIDefinitions/subscriptions.yaml
