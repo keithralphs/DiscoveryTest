@@ -5,5 +5,5 @@ metadata:
 spec:
   type: url
   targets:
-    - http://github.com/keithralphs/DiscoveryTest/rawAPIDefinitions/sponge.yaml
-    - http://github.com/keithralphs/DiscoveryTest/rawAPIDefinitions/subscriptions.yaml
+    - http://github.com/keithralphs/DiscoveryTest/locations/entities/sponge.yaml
+    - http://github.com/keithralphs/DiscoveryTest/locations/entities/subscriptions.yaml
