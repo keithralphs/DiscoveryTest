@@ -1,0 +1,292 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: spongeinroot
+  description: The Sponge API in the root dir
+spec:
+  type: openapi
+  lifecycle: development
+  owner: keith.ralphs@diamond.ac.uk
+  definition: |
+    openapi: '3.0.2'
+    info:
+      title: Sponge
+      version: '0.1'
+    servers:
+      - url: https://{environment}.sponge/v1
+        variables:
+          environment:
+            default: public
+            enum:
+            - public
+            - dev
+            - staging
+    paths:
+      /:
+        get:
+          summary: Retrieve the current set of subscriptions. Supports filtering by creation-timestamp, last-event-time, seconds-active and event-count
+          parameters:
+            - name: session-id
+              in: header
+              description: The id identifying the session for which subscriptions are to be retrieved
+              schema:
+                type: string
+              required: true
+            - name: creation-timestamp
+              in: query
+              description: The date-time at which the subscription was created; intended for before/after filtering
+              schema:
+                type: string
+                format: date-time
+              required: false
+            - name: last-event-time
+              in: query
+              description: The date-time at which the most recent event was propagated by the subscription; intended for before/after filtering
+              schema:
+                type: string
+                format: date-time
+              required: false
+            - name: seconds-active
+              in: query
+              description: The number of seconds since the subscription was created; intended for time based filtering
+              schema:
+                type: integer
+              required: false
+            - name: event-count
+              in: query
+              description: The number of events the subscription has propagated since it was created; intended for count based filtering
+              schema:
+                type: integer
+              required: false
+          responses:
+            '200':
+              description: OK
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    additionalProperties:
+                      $ref: '#/components/schemas/SubscriptionDetail'
+            '400':
+              description: Bad Request
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: Malformed request, unable to respond
+            '401':
+              description: Unauthorized
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: Authentication is required to access this resource
+            '403':
+              description: Forbidden
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: You are not authorized to access this resource
+        post:
+          summary: Create new subscrikption to specififed subscribable
+          requestBody:
+            description: Identifies the subscribable to be subscribed to
+            required: true
+            content:
+              text/plain:
+                schema:
+                  type: string
+                  pattern: "^[A-Z]{4}-[0-9]{4}$"
+          responses:
+            '200':
+              description: OK
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/SubscriptionInfo'
+            '400':
+              description: Bad Request
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: Malformed request, unable to respond
+            '401':
+              description: Unauthorized
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: Authentication is required to access this resource
+            '403':
+              description: Forbidden
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: You are not authorized to access this resource
+      /{subscription-id}:
+        get:
+          summary: Retrieve the subscription with the specified subscription-id
+          parameters:
+            - name: session-id
+              in: header
+              description: The id identifying the session for which subscriptions are to be retrieved
+              schema:
+                type: string
+              required: true
+            - name: subscription-id
+              in: path
+              description: The id of the subscription to be retrieved
+              schema:
+                type: string        
+                format: uuid
+              required: true
+          responses:
+            '200':
+              description: OK
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/SubscriptionDetail'
+            '400':
+              description: Bad Request
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: Malformed request, unable to respond
+            '401':
+              description: Unauthorized
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: Authentication is required to access this resource
+            '403':
+              description: Forbidden
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: You are not authorized to access this resource
+        delete:
+          summary: Cancel the subscription with the specified subscription-id
+          parameters:
+            - name: session-id
+              in: header
+              description: The id of the owning session for the subscription to be cancelled
+              schema:
+                type: string
+              required: true
+            - name: subscription-id
+              in: path
+              description: The id of the subscription to be canvcelled
+              schema:
+                type: string        
+                format: uuid
+              required: true
+          responses:
+            '200':
+              description: OK
+            '400':
+              description: Bad Request
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: Malformed request, unable to respond
+            '401':
+              description: Unauthorized
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: Authentication is required to access this resource
+            '403':
+              description: Forbidden
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: You are not authorized to access this resource      
+      /subscribables:
+        get:
+          summary: Retrieve the current set of event sources that support subscription
+          parameters:
+            - name: session-id
+              in: header
+              description: The id identifying the client session. The type of session will determine which subscribables are available.
+              schema:
+                type: string
+              required: true
+          responses:
+            '200':
+              description: OK
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    description: A map of subscribable-id to description of the subscribable
+                    additionalProperties:
+                      description: A description of the subscribable identifying its purpose
+                      type: string
+            '400':
+              description: Bad Request
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: Malformed request, unable to respond
+            '401':
+              description: Unauthorized
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: Authentication is required to access this resource
+            '403':
+              description: Forbidden
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                    example: You are not authorized to access this resource
+    components:
+      schemas:
+        SubscriptionDetail:
+          type: object
+          properties:
+            session-id:
+              type: string
+            creation-timestamp:
+              type: string
+              format: date-time
+            seconds-active:
+              type: integer
+            last-event-time:
+              type: string
+              format: date-time
+            event-count:
+              type: integer        
+          required:
+            - session-id
+            - creation-timestamp
+            - seconds-active
+            - last-event-time
+            - event-count
+        SubscriptionInfo:
+          type: object
+          properties:
+            subscription-id:
+              type: string
+              format: uuid
+            creation-timestamp:
+              type: string
+              format: date-time      
+          required:
+            - subscription-id
+            - creation-timestamp
+
+            
